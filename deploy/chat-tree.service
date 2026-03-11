@@ -1,0 +1,17 @@
+[Unit]
+Description=Pyrite AI Web Chat
+After=network.target
+
+[Service]
+Type=simple
+User=admin
+WorkingDirectory=/opt/chat-tree
+Environment="CHAT_PASSWORD=a86582751"
+Environment="PORT=3333"
+Environment="NODE_ENV=production"
+ExecStart=/usr/local/bin/bun run src/index.ts
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
