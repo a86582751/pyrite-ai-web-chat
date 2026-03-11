@@ -1,0 +1,63 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      # Build client
+      - name: Install client dependencies
+        working-directory: ./client
+        run: bun install
+      
+      - name: Build client
+        working-directory: ./client
+        run: bun run build
+      
+      # Build server
+      - name: Install server dependencies
+        working-directory: ./server
+        run: bun install
+      
+      - name: Create release package
+        run: |
+          mkdir -p release/chat-tree
+          cp -r server/* release/chat-tree/
+          rm -rf release/chat-tree/node_modules
+          rm -rf release/chat-tree/data
+          cd release && zip -r ../chat-tree.zip chat-tree
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: chat-tree
+          path: chat-tree.zip
+      
+      # Create release on tag
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: chat-tree.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
