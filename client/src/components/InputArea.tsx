@@ -27,7 +27,7 @@ export function InputArea({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   
-  const { models, selectedModels, toggleModel } = useModelStore()
+  const { models } = useModelStore()
   const { servers, enabledServers, toggleServer } = useMcpStore()
 
   // Auto-resize textarea

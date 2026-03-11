@@ -1,27 +1,22 @@
-import { useState } from 'react'
+import React from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { RotateCcw, ChevronLeft, ChevronRight, User, Bot, FileText, Image as ImageIcon } from 'lucide-react'
+import { RotateCcw, User, Bot, FileText } from 'lucide-react'
 import type { Message } from '../types'
 
 interface MessageNodeProps {
   message: Message
   depth: number
-  path: number[]
   streamingContent?: string
   onRegenerate: (messageId: string) => void
-  isLast: boolean
 }
 
 export function MessageNode({
   message,
   depth,
-  path,
   streamingContent,
   onRegenerate,
-  isLast,
 }: MessageNodeProps) {
-  const [showBranchNav, setShowBranchNav] = useState(false)
   const isUser = message.role === 'user'
   const displayContent = streamingContent || message.content
   const hasSiblings = (message.branchIndex || 0) > 0 || (message.children && message.children.length > 0)

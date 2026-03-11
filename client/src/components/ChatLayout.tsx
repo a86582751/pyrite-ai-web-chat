@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Sidebar } from './Sidebar'
 import { ChatArea } from './ChatArea'
 import { sessionsApi } from '../utils/api'
@@ -70,9 +70,9 @@ export function ChatLayout() {
     }
   }
 
-  const handleMessagesUpdate = useCallback((newMessages: Message[]) => {
+  const handleMessagesUpdate = (newMessages: Message[]) => {
     setMessages(newMessages)
-  }, [])
+  }
 
   return (
     <div className="flex h-screen bg-slate-950">

@@ -95,10 +95,8 @@ export function MessageTree({ messages, streamingContent, onRegenerate, isStream
               <MessageNode
                 message={message}
                 depth={depth}
-                path={path}
                 streamingContent={streamingContent[message.id]}
                 onRegenerate={onRegenerate}
-                isLast={isLast}
               />
             </div>
           )
