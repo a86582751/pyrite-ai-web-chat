@@ -19,6 +19,9 @@ app.use(cors({
 // Static files (uploaded files)
 app.use('/files/*', serveStatic({ root: './uploads' }))
 
+// Serve frontend static files
+app.use('/*', serveStatic({ root: './public' }))
+
 // Auth middleware for API routes
 app.use('/api/*', authMiddleware)
 
