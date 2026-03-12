@@ -209,7 +209,7 @@ function ProvidersTab({ providers, configs, onAdd, onDelete }: ProvidersTabProps
       setFetchedModels(models)
       setEditingProvider(prev => ({
         ...prev,
-        models: models.slice(0, 100),
+        models: models.slice(0, 1000),
       }))
     } catch (error) {
       setFetchError('获取模型列表失败，请手动输入')
