@@ -558,22 +558,68 @@ interface McpServersTabProps {
 
 function McpServersTab({ servers, onAdd, onDelete }: McpServersTabProps) {
   const [isAdding, setIsAdding] = useState(false)
-  const [formData, setFormData] = useState({
-    name: '',
-    url: '',
-  })
+  const [jsonInput, setJsonInput] = useState('')
+  const [parseError, setParseError] = useState('')
+  const [parsedConfig, setParsedConfig] = useState<{
+    name: string
+    url: string
+    headers?: Record<string, string>
+  } | null>(null)
+
+  const handleJsonChange = (value: string) => {
+    setJsonInput(value)
+    setParseError('')
+    setParsedConfig(null)
+
+    if (!value.trim()) return
+
+    try {
+      const parsed = JSON.parse(value)
+      
+      // Validate required fields
+      if (!parsed.name || !parsed.url) {
+        setParseError('JSON 必须包含 name 和 url 字段')
+        return
+      }
+
+      // Extract config
+      const config = {
+        name: parsed.name,
+        url: parsed.url,
+        headers: parsed.headers || {},
+      }
+
+      setParsedConfig(config)
+    } catch (e) {
+      setParseError('无效的 JSON 格式')
+    }
+  }
 
   const handleSave = () => {
-    if (!formData.name || !formData.url) return
+    if (!parsedConfig) return
+    
     onAdd({
-      name: formData.name,
-      url: formData.url,
+      name: parsedConfig.name,
+      url: parsedConfig.url,
       type: 'sse',
       enabled: true,
+      config: parsedConfig.headers ? { headers: parsedConfig.headers } : undefined,
     })
-    setFormData({ name: '', url: '' })
+    
+    // Reset
+    setJsonInput('')
+    setParsedConfig(null)
+    setParseError('')
     setIsAdding(false)
   }
+
+  const exampleJson = `{
+  "name": "web-search",
+  "url": "https://example.com/mcp/sse",
+  "headers": {
+    "Authorization": "Bearer sk-your-api-key"
+  }
+}`
 
   return (
     <div className="space-y-4">
@@ -613,6 +659,11 @@ function McpServersTab({ servers, onAdd, onDelete }: McpServersTabProps) {
                       </span>
                     </div>
                     <p className="text-sm text-slate-400 truncate mt-1">{server.url}</p>
+                    {server.config?.headers && Object.keys(server.config.headers).length > 0 && (
+                      <p className="text-xs text-slate-500 mt-1">
+                        Headers: {Object.keys(server.config.headers).join(', ')}
+                      </p>
+                    )}
                   </div>
                   <button
                     onClick={() => onDelete(server.id)}
@@ -627,37 +678,79 @@ function McpServersTab({ servers, onAdd, onDelete }: McpServersTabProps) {
         </>
       ) : (
         <div className="space-y-4">
-          <h3 className="text-sm font-medium text-slate-300">添加 MCP 服务器</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-medium text-slate-300">添加 MCP 服务器</h3>
+            <button
+              onClick={() => {
+                setIsAdding(false)
+                setJsonInput('')
+                setParsedConfig(null)
+                setParseError('')
+              }}
+              className="text-slate-400 hover:text-white text-sm"
+            >
+              ← 返回
+            </button>
+          </div>
           
           <div className="space-y-4">
             <div>
-              <label className="block text-sm text-slate-400 mb-1.5">名称</label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="例如：我的搜索服务"
-                className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500"
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm text-slate-400">粘贴 MCP JSON 配置</label>
+                <button
+                  onClick={() => setJsonInput(exampleJson)}
+                  className="text-xs text-blue-400 hover:text-blue-300"
+                >
+                  查看示例
+                </button>
+              </div>
+              <textarea
+                value={jsonInput}
+                onChange={(e) => handleJsonChange(e.target.value)}
+                placeholder={`{
+  "name": "web-search",
+  "url": "https://example.com/mcp/sse",
+  "headers": {
+    "Authorization": "Bearer sk-your-api-key"
+  }
+}`}
+                rows={8}
+                className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 resize-none font-mono text-sm"
               />
+              {parseError && (
+                <p className="text-sm text-red-400 mt-2">{parseError}</p>
+              )}
             </div>
-            
-            <div>
-              <label className="block text-sm text-slate-400 mb-1.5">SSE URL</label>
-              <input
-                type="text"
-                value={formData.url}
-                onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                placeholder="例如：https://example.com/mcp/sse"
-                className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500"
-              />
-            </div>
+
+            {/* Parsed Config Preview */}
+            {parsedConfig && (
+              <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4 space-y-2">
+                <h4 className="text-sm font-medium text-slate-300">配置预览</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex">
+                    <span className="text-slate-500 w-16">名称:</span>
+                    <span className="text-white">{parsedConfig.name}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-slate-500 w-16">URL:</span>
+                    <span className="text-white truncate">{parsedConfig.url}</span>
+                  </div>
+                  {parsedConfig.headers && Object.keys(parsedConfig.headers).length > 0 && (
+                    <div className="flex">
+                      <span className="text-slate-500 w-16">Headers:</span>
+                      <span className="text-white">{Object.keys(parsedConfig.headers).join(', ')}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-3 pt-4">
             <button
               onClick={handleSave}
-              disabled={!formData.name || !formData.url}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg transition-colors"
+              disabled={!parsedConfig}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
             >
               <Save className="w-4 h-4" />
               保存
@@ -665,7 +758,9 @@ function McpServersTab({ servers, onAdd, onDelete }: McpServersTabProps) {
             <button
               onClick={() => {
                 setIsAdding(false)
-                setFormData({ name: '', url: '' })
+                setJsonInput('')
+                setParsedConfig(null)
+                setParseError('')
               }}
               className="px-4 py-2 text-slate-400 hover:text-white transition-colors"
             >
