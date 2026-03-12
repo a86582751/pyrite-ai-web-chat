@@ -184,7 +184,7 @@ export function ChatArea({ session, messages, onMessagesUpdate, onToggleSidebar 
           <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
             <span className="text-2xl">🌳</span>
           </div>
-          <h2 className="text-xl font-semibold text-white mb-2">Chat Tree</h2>
+          <h2 className="text-xl font-semibold text-white mb-2">Pyrite AI</h2>
           <p className="text-slate-400">选择一个对话或创建新对话</p>
           <button
             onClick={onToggleSidebar}

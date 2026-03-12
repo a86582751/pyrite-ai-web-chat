@@ -36,7 +36,7 @@ export function Login() {
           </div>
           
           <h1 className="text-2xl font-bold text-center text-white mb-2">
-            Chat Tree
+            Pyrite AI
           </h1>
           <p className="text-center text-slate-400 mb-8">
             消息树 · 多模型对话
