@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { X, Plus, Trash2, Save, AlertCircle, RefreshCw, Server } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { X, Plus, Trash2, Save, AlertCircle, RefreshCw, Server, Search, Edit2 } from 'lucide-react'
 import { useMcpStore } from '../store/mcp'
 import { useModelConfigStore } from '../store/modelConfigs'
 import type { McpServer } from '../store/mcp'
@@ -20,7 +20,7 @@ const PROTOCOLS = {
   anthropic: {
     name: 'Anthropic',
     defaultBaseUrl: 'https://api.anthropic.com/v1',
-    modelsEndpoint: null, // No standard models endpoint
+    modelsEndpoint: null,
   },
   gemini: {
     name: 'Google Gemini',
@@ -57,22 +57,24 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [activeTab, setActiveTab] = useState<'providers' | 'mcp'>('providers')
 
   // Group configs by provider name
-  const providers = modelConfigs.reduce((acc, config) => {
-    const key = config.provider
-    if (!acc[key]) {
-      acc[key] = {
-        id: key,
-        name: config.provider,
-        protocol: 'openai' as ProtocolKey,
-        baseUrl: config.baseUrl || '',
-        apiKey: config.apiKey,
-        models: [],
-        enabled: true,
+  const providers = useMemo(() => {
+    return modelConfigs.reduce((acc, config) => {
+      const key = config.provider
+      if (!acc[key]) {
+        acc[key] = {
+          id: key,
+          name: config.provider,
+          protocol: 'openai' as ProtocolKey,
+          baseUrl: config.baseUrl || '',
+          apiKey: config.apiKey,
+          models: [],
+          enabled: true,
+        }
       }
-    }
-    acc[key].models.push(config.name)
-    return acc
-  }, {} as Record<string, Provider>)
+      acc[key].models.push(config.name)
+      return acc
+    }, {} as Record<string, Provider>)
+  }, [modelConfigs])
 
   if (!isOpen) return null
 
@@ -148,7 +150,11 @@ interface ProvidersTabProps {
 
 function ProvidersTab({ providers, configs, onAdd, onDelete }: ProvidersTabProps) {
   const [step, setStep] = useState<'list' | 'configure'>('list')
-  const [editingProvider, setEditingProvider] = useState<Partial<Provider> & { customModels?: string }>({
+  const [editingProvider, setEditingProvider] = useState<Partial<Provider> & { 
+    customModels?: string
+    isEditing?: boolean
+    originalName?: string
+  }>({
     name: '',
     protocol: 'openai',
     baseUrl: '',
@@ -158,6 +164,8 @@ function ProvidersTab({ providers, configs, onAdd, onDelete }: ProvidersTabProps
   })
   const [isLoading, setIsLoading] = useState(false)
   const [fetchError, setFetchError] = useState('')
+  const [modelSearch, setModelSearch] = useState('')
+  const [fetchedModels, setFetchedModels] = useState<string[]>([])
 
   const resetForm = () => {
     setEditingProvider({
@@ -168,6 +176,8 @@ function ProvidersTab({ providers, configs, onAdd, onDelete }: ProvidersTabProps
       models: [],
       customModels: '',
     })
+    setFetchedModels([])
+    setModelSearch('')
     setFetchError('')
     setStep('list')
   }
@@ -196,9 +206,10 @@ function ProvidersTab({ providers, configs, onAdd, onDelete }: ProvidersTabProps
       const data = await response.json()
       const models = data.data?.map((m: any) => m.id) || []
       
+      setFetchedModels(models)
       setEditingProvider(prev => ({
         ...prev,
-        models: models.slice(0, 50), // Limit to 50 models
+        models: models.slice(0, 100),
       }))
     } catch (error) {
       setFetchError('获取模型列表失败，请手动输入')
@@ -219,6 +230,12 @@ function ProvidersTab({ providers, configs, onAdd, onDelete }: ProvidersTabProps
       return
     }
 
+    // If editing, delete old configs first
+    if (editingProvider.isEditing && editingProvider.originalName) {
+      const oldConfigs = configs.filter(c => c.provider === editingProvider.originalName)
+      oldConfigs.forEach(c => onDelete(c.id))
+    }
+
     modelsToSave.forEach(modelName => {
       onAdd({
         provider: editingProvider.name!,
@@ -231,6 +248,26 @@ function ProvidersTab({ providers, configs, onAdd, onDelete }: ProvidersTabProps
 
     resetForm()
   }
+
+  const handleEdit = (provider: Provider) => {
+    setEditingProvider({
+      name: provider.name,
+      protocol: provider.protocol,
+      baseUrl: provider.baseUrl,
+      apiKey: provider.apiKey,
+      models: provider.models,
+      customModels: '',
+      isEditing: true,
+      originalName: provider.name,
+    })
+    setFetchedModels(provider.models)
+    setStep('configure')
+  }
+
+  const filteredModels = useMemo(() => {
+    if (!modelSearch) return fetchedModels
+    return fetchedModels.filter(m => m.toLowerCase().includes(modelSearch.toLowerCase()))
+  }, [fetchedModels, modelSearch])
 
   // List View
   if (step === 'list') {
@@ -264,15 +301,25 @@ function ProvidersTab({ providers, configs, onAdd, onDelete }: ProvidersTabProps
                       {PROTOCOLS[provider.protocol]?.name || provider.protocol} · {provider.models.length} 个模型
                     </div>
                   </div>
-                  <button
-                    onClick={() => {
-                      const providerConfigs = configs.filter(c => c.provider === provider.name)
-                      providerConfigs.forEach(c => onDelete(c.id))
-                    }}
-                    className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => handleEdit(provider)}
+                      className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                      title="编辑"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        const providerConfigs = configs.filter(c => c.provider === provider.name)
+                        providerConfigs.forEach(c => onDelete(c.id))
+                      }}
+                      className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                      title="删除"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
                 <div className="px-4 py-2">
                   <div className="flex flex-wrap gap-2">
@@ -306,7 +353,9 @@ function ProvidersTab({ providers, configs, onAdd, onDelete }: ProvidersTabProps
         >
           ← 返回
         </button>
-        <h3 className="text-sm font-medium text-slate-300">添加服务商</h3>
+        <h3 className="text-sm font-medium text-slate-300">
+          {editingProvider.isEditing ? '编辑服务商' : '添加服务商'}
+        </h3>
       </div>
 
       <div className="space-y-4">
@@ -385,23 +434,58 @@ function ProvidersTab({ providers, configs, onAdd, onDelete }: ProvidersTabProps
           </div>
         )}
 
-        {/* Models Selection */}
-        {editingProvider.models && editingProvider.models.length > 0 && (
+        {/* Models Selection with Search */}
+        {fetchedModels.length > 0 && (
           <div>
-            <label className="block text-sm text-slate-400 mb-1.5">选择要添加的模型</label>
-            <div className="max-h-40 overflow-y-auto space-y-1 border border-slate-700 rounded-lg p-2">
-              {editingProvider.models.map(model => (
-                <label key={model} className="flex items-center gap-2 p-2 hover:bg-slate-800 rounded cursor-pointer">
-                  <input type="checkbox" defaultChecked className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-blue-600" />
-                  <span className="text-sm text-slate-300">{model}</span>
-                </label>
-              ))}
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm text-slate-400">
+                选择要添加的模型 ({editingProvider.models?.length || 0} 已选)
+              </label>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <input
+                  type="text"
+                  value={modelSearch}
+                  onChange={(e) => setModelSearch(e.target.value)}
+                  placeholder="搜索模型..."
+                  className="pl-9 pr-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500"
+                />
+              </div>
+            </div>
+            <div className="max-h-48 overflow-y-auto space-y-1 border border-slate-700 rounded-lg p-2">
+              {filteredModels.length === 0 ? (
+                <p className="text-sm text-slate-500 text-center py-4">未找到匹配的模型</p>
+              ) : (
+                filteredModels.map(model => (
+                  <label key={model} className="flex items-center gap-2 p-2 hover:bg-slate-800 rounded cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={editingProvider.models?.includes(model)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setEditingProvider(prev => ({
+                            ...prev,
+                            models: [...(prev.models || []), model]
+                          }))
+                        } else {
+                          setEditingProvider(prev => ({
+                            ...prev,
+                            models: (prev.models || []).filter(m => m !== model)
+                          }))
+                        }
+                      }}
+                      className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-blue-600" 
+                    />
+                    <span className="text-sm text-slate-300">{model}</span>
+                  </label>
+                ))
+              )}
             </div>
           </div>
         )}
 
         {/* Manual Models Input */}
-        {(!editingProvider.models || editingProvider.models.length === 0) && (
+        {(fetchedModels.length === 0 || editingProvider.customModels !== undefined) && (
           <div>
             <label className="block text-sm text-slate-400 mb-1.5">
               手动输入模型（每行一个）
@@ -425,7 +509,7 @@ function ProvidersTab({ providers, configs, onAdd, onDelete }: ProvidersTabProps
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
         >
           <Save className="w-4 h-4" />
-          保存配置
+          {editingProvider.isEditing ? '保存修改' : '保存配置'}
         </button>
         <button
           onClick={resetForm}
