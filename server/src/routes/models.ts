@@ -102,7 +102,32 @@ const SYSTEM_MODELS = {
   ]
 }
 
-// Get all available models
+// Get user's model configs
+modelRoutes.get('/configs', (c) => {
+  const configs = db.getModelConfigs()
+  return c.json(configs)
+})
+
+// Save model config
+modelRoutes.post('/configs', async (c) => {
+  const config = await c.req.json()
+  const id = db.saveModelConfig(config)
+  return c.json({ id, success: true })
+})
+
+// Delete model config
+modelRoutes.delete('/configs/:id', (c) => {
+  const id = c.req.param('id')
+  // Soft delete by disabling
+  const config = db.getModelConfig(id)
+  if (config) {
+    config.enabled = false
+    db.saveModelConfig(config)
+  }
+  return c.json({ success: true })
+})
+
+// Get all available models (system + configured)
 modelRoutes.get('/', (c) => {
   const configs = db.getModelConfigs()
   const configuredProviders = new Set(configs.map(c => c.provider))
