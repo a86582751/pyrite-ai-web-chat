@@ -131,50 +131,86 @@ export function InputArea({
         {/* Model selector */}
         <div className="relative shrink-0">
           <button
-            onClick={() => setShowModelSelect(!showModelSelect)}
-            className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs sm:text-sm text-slate-300 transition-colors whitespace-nowrap"
+            onClick={() => {
+              console.log('Model button clicked, allModels:', allModels.length)
+              setShowModelSelect(!showModelSelect)
+            }}
+            className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-lg text-xs sm:text-sm transition-all whitespace-nowrap"
+            style={{
+              backgroundColor: showModelSelect ? 'rgba(157, 78, 221, 0.3)' : 'var(--bg-card)',
+              border: '1px solid var(--border-color)',
+              color: selectedModel ? 'var(--text-primary)' : 'var(--text-muted)',
+            }}
           >
-            <span className="truncate max-w-[80px] sm:max-w-[150px]">
+            <span className="truncate max-w-[100px] sm:max-w-[180px]">
               {selectedModel || '选择模型'}
             </span>
-            <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: 'var(--accent-secondary)' }} />
           </button>
           
           {showModelSelect && (
-            <div className="absolute bottom-full left-0 mb-2 w-64 sm:w-72 max-h-80 overflow-y-auto bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50">
+            <div 
+              className="absolute bottom-full left-0 mb-2 w-72 sm:w-80 max-h-96 overflow-y-auto rounded-xl shadow-2xl z-50"
+              style={{
+                backgroundColor: 'var(--bg-card)',
+                border: '1px solid var(--border-color)',
+              }}
+            >
               {allModels.length === 0 ? (
-                <div className="px-3 py-4 text-sm text-slate-500 text-center">
-                  暂无配置模型
-                  <br />
+                <div className="px-4 py-6 text-sm text-center" style={{ color: 'var(--text-muted)' }}>
+                  <div className="mb-2">暂无配置模型</div>
                   <button
                     onClick={() => {
                       setShowModelSelect(false)
                       setShowSettings(true)
                     }}
-                    className="text-blue-400 hover:underline mt-1"
+                    className="text-sm transition-colors"
+                    style={{ color: 'var(--accent-secondary)' }}
                   >
-                    去添加模型
+                    去添加模型 →
                   </button>
                 </div>
               ) : (
                 Object.entries(groupedModels).map(([provider, modelList]) => (
                   modelList.length > 0 && (
                     <div key={provider}>
-                      <div className="px-3 py-2 text-xs font-medium text-slate-500 uppercase bg-slate-800 sticky top-0">
+                      <div 
+                        className="px-4 py-2 text-xs font-medium uppercase sticky top-0"
+                        style={{ 
+                          backgroundColor: 'var(--bg-card)',
+                          color: 'var(--accent-secondary)',
+                          borderBottom: '1px solid var(--border-color)',
+                        }}
+                      >
                         {provider}
                       </div>
                       {modelList.map((model) => (
                         <button
                           key={model.id}
                           onClick={() => {
+                            console.log('Selected model:', model.name)
                             onModelChange(model.name)
                             setShowModelSelect(false)
                           }}
-                          className={`
-                            w-full px-3 py-2 text-left text-sm hover:bg-slate-700 transition-colors
-                            ${selectedModel === model.name ? 'bg-blue-600/20 text-blue-400' : 'text-slate-300'}
-                          `}
+                          className="w-full px-4 py-2.5 text-left text-sm transition-all flex items-center gap-2"
+                          style={{
+                            backgroundColor: selectedModel === model.name ? 'rgba(157, 78, 221, 0.2)' : 'transparent',
+                            color: selectedModel === model.name ? 'var(--accent-secondary)' : 'var(--text-secondary)',
+                          }}
+                          onMouseEnter={(e) => {
+                            if (selectedModel !== model.name) {
+                              e.currentTarget.style.backgroundColor = 'var(--bg-hover)'
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (selectedModel !== model.name) {
+                              e.currentTarget.style.backgroundColor = 'transparent'
+                            }
+                          }}
                         >
+                          {selectedModel === model.name && (
+                            <span style={{ color: 'var(--accent-secondary)' }}>✓</span>
+                          )}
                           {model.name}
                         </button>
                       ))}

@@ -4,48 +4,44 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
-    --radius: 0.5rem;
-  }
-
-  .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
+    /* Cherry Studio inspired dark theme */
+    --bg-primary: #1a1a2e;
+    --bg-secondary: #16213e;
+    --bg-tertiary: #0f3460;
+    --bg-card: #252542;
+    --bg-hover: #2d2d52;
+    
+    --accent-primary: #e94560;
+    --accent-secondary: #9d4edd;
+    --accent-success: #00d084;
+    --accent-warning: #ffa726;
+    
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0b0;
+    --text-muted: #6a6a7a;
+    
+    --border-color: #2d2d4a;
+    
+    --background: 240 20% 12%;
+    --foreground: 0 0% 100%;
+    --card: 240 20% 15%;
+    --card-foreground: 0 0% 100%;
+    --popover: 240 20% 12%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 280 70% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 20% 20%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 240 20% 20%;
+    --muted-foreground: 240 10% 60%;
+    --accent: 340 80% 60%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 340 80% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 20% 25%;
+    --input: 240 20% 25%;
+    --ring: 280 70% 60%;
+    --radius: 0.75rem;
   }
 }
 
@@ -55,6 +51,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-color: var(--bg-primary);
   }
 }
 
@@ -69,12 +66,12 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground) / 0.3);
+  background: rgba(157, 78, 221, 0.3);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.5);
+  background: rgba(157, 78, 221, 0.5);
 }
 
 /* Hide scrollbar utility */
@@ -101,28 +98,36 @@
   }
 }
 
-/* Message tree styles */
-.message-branch {
-  position: relative;
+/* Cherry Studio style buttons */
+.btn-primary {
+  background: linear-gradient(135deg, #9d4edd 0%, #e94560 100%);
+  color: white;
+  border: none;
+  transition: all 0.2s ease;
 }
 
-.message-branch::before {
-  content: '';
-  position: absolute;
-  left: -12px;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: hsl(var(--border));
+.btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(157, 78, 221, 0.4);
 }
 
-.branch-indicator {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  background: hsl(var(--secondary));
-  color: hsl(var(--secondary-foreground));
+/* Glass effect */
+.glass {
+  background: rgba(37, 37, 66, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(157, 78, 221, 0.2);
+}
+
+/* Glow effect */
+.glow {
+  box-shadow: 0 0 20px rgba(157, 78, 221, 0.3);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #9d4edd 0%, #e94560 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
