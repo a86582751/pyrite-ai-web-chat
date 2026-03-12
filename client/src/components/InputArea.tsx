@@ -3,6 +3,7 @@ import { Send, Square, Paperclip, ChevronDown, Settings, Plus } from 'lucide-rea
 import { useModelStore } from '../store/models'
 import { useMcpStore } from '../store/mcp'
 import { uploadApi } from '../utils/api'
+import { SettingsModal } from './SettingsModal'
 
 interface InputAreaProps {
   onSend: (message: string, attachments?: string[]) => void
@@ -24,6 +25,7 @@ export function InputArea({
   const [isUploading, setIsUploading] = useState(false)
   const [showModelSelect, setShowModelSelect] = useState(false)
   const [showMcpSelect, setShowMcpSelect] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   
@@ -90,6 +92,8 @@ export function InputArea({
 
   return (
     <div className="border-t border-slate-800 bg-slate-900/50 p-4">
+      <SettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
+      
       {/* Attachments preview */}
       {attachments.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-3">
@@ -120,12 +124,12 @@ export function InputArea({
             onClick={() => setShowModelSelect(!showModelSelect)}
             className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm text-slate-300 transition-colors"
           >
-            <span className="truncate max-w-[150px]">{selectedModel}</span>
+            <span className="truncate max-w-[100px] sm:max-w-[150px]">{selectedModel}</span>
             <ChevronDown className="w-4 h-4" />
           </button>
           
           {showModelSelect && (
-            <div className="absolute bottom-full left-0 mb-2 w-64 max-h-80 overflow-y-auto bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50">
+            <div className="absolute bottom-full left-0 mb-2 w-56 sm:w-64 max-h-80 overflow-y-auto bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50">
               {Object.entries(groupedModels).map(([provider, modelList]) => (
                 modelList.length > 0 && (
                   <div key={provider}>
@@ -167,19 +171,23 @@ export function InputArea({
             `}
           >
             <Settings className="w-4 h-4" />
-            <span>MCP ({enabledServers.length})</span>
+            <span className="hidden sm:inline">MCP ({enabledServers.length})</span>
+            <span className="sm:hidden">({enabledServers.length})</span>
             <ChevronDown className="w-4 h-4" />
           </button>
           
           {showMcpSelect && (
-            <div className="absolute bottom-full left-0 mb-2 w-64 max-h-80 overflow-y-auto bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50">
+            <div className="absolute bottom-full left-0 mb-2 w-56 sm:w-64 max-h-80 overflow-y-auto bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50">
               <div className="p-2 border-b border-slate-700">
                 <button
-                  onClick={() => {/* Open MCP settings */}}
+                  onClick={() => {
+                    setShowMcpSelect(false)
+                    setShowSettings(true)
+                  }}
                   className="flex items-center gap-2 w-full px-2 py-1.5 text-sm text-slate-300 hover:bg-slate-700 rounded"
                 >
                   <Plus className="w-4 h-4" />
-                  添加 MCP 服务器
+                  管理 MCP 服务器
                 </button>
               </div>
               {servers.length === 0 ? (
@@ -198,9 +206,8 @@ export function InputArea({
                       onChange={() => toggleServer(server.id)}
                       className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-blue-600 focus:ring-blue-600"
                     />
-                    <div className="flex-1">
-                      <div className="text-sm text-slate-300">{server.name}</div>
-                      <div className="text-xs text-slate-500 truncate">{server.url}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm text-slate-300 truncate">{server.name}</div>
                     </div>
                   </label>
                 ))
@@ -208,6 +215,15 @@ export function InputArea({
             </div>
           )}
         </div>
+
+        {/* Settings button */}
+        <button
+          onClick={() => setShowSettings(true)}
+          className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+          title="设置"
+        >
+          <Settings className="w-5 h-5" />
+        </button>
 
         {/* File upload */}
         <input
