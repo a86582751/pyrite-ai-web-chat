@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react'
 import { Send, Square, Paperclip, ChevronDown, Settings, Plus } from 'lucide-react'
 import { useModelStore } from '../store/models'
+import { useModelConfigStore } from '../store/modelConfigs'
 import { useMcpStore } from '../store/mcp'
 import { uploadApi } from '../utils/api'
 import { SettingsModal } from './SettingsModal'
@@ -29,8 +30,21 @@ export function InputArea({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   
-  const { models } = useModelStore()
+  useModelStore() // Keep hook for compatibility
+  const { configs: modelConfigs } = useModelConfigStore()
   const { servers, enabledServers, toggleServer } = useMcpStore()
+
+  // Group models by provider from user configs
+  const groupedModels = modelConfigs.reduce((acc, config) => {
+    if (!acc[config.provider]) acc[config.provider] = []
+    acc[config.provider].push({
+      id: config.name,
+      name: config.name,
+      group: config.provider,
+      configured: true,
+    })
+    return acc
+  }, {} as Record<string, any[]>)
 
   // Auto-resize textarea
   const adjustHeight = useCallback(() => {
@@ -83,12 +97,6 @@ export function InputArea({
   const removeAttachment = (url: string) => {
     setAttachments(prev => prev.filter(a => a !== url))
   }
-
-  // Group models by provider
-  const groupedModels = Object.entries(models).reduce((acc, [provider, modelList]) => {
-    acc[provider] = modelList.filter(m => m.configured !== false)
-    return acc
-  }, {} as Record<string, any[]>)
 
   return (
     <div className="border-t border-slate-800 bg-slate-900/50 p-4">

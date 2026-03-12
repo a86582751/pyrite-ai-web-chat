@@ -3,6 +3,7 @@ import { MessageTree } from './MessageTree'
 import { InputArea } from './InputArea'
 import { AssistantSettingsModal } from './AssistantSettingsModal'
 import { useAssistantStore } from '../store/assistants'
+import { useModelConfigStore } from '../store/modelConfigs'
 import { chatApi, sessionsApi } from '../utils/api'
 import type { Session, Message } from '../types'
 import { Bot } from 'lucide-react'
@@ -15,13 +16,24 @@ interface ChatAreaProps {
 }
 
 export function ChatArea({ session, messages, onMessagesUpdate, onToggleSidebar }: ChatAreaProps) {
-  const [selectedModel, setSelectedModel] = useState('gpt-5')
+  const { configs: modelConfigs } = useModelConfigStore()
+  const [selectedModel, setSelectedModel] = useState(() => {
+    // Default to first configured model
+    return modelConfigs[0]?.name || 'gpt-4'
+  })
   const [streamingContent, setStreamingContent] = useState<Record<string, string>>({})
   const [isStreaming, setIsStreaming] = useState(false)
   const [showAssistantSettings, setShowAssistantSettings] = useState(false)
   const [currentAssistantId, setCurrentAssistantId] = useState<string | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
   const { assistants, getDefaultAssistant } = useAssistantStore()
+
+  // Update selected model when configs change
+  useEffect(() => {
+    if (modelConfigs.length > 0 && !modelConfigs.find(c => c.name === selectedModel)) {
+      setSelectedModel(modelConfigs[0].name)
+    }
+  }, [modelConfigs, selectedModel])
 
   // Cleanup abort controller on unmount
   useEffect(() => {
