@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Sidebar } from './Sidebar'
 import { ChatArea } from './ChatArea'
+import { SettingsModal } from './SettingsModal'
 import { sessionsApi } from '../utils/api'
 import type { Session, Message } from '../types'
 
@@ -71,9 +72,11 @@ export function ChatLayout() {
   }
 
   const [showSidebar, setShowSidebar] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
 
   return (
     <div className="flex h-screen h-[100dvh] bg-slate-950 overflow-hidden">
+      <SettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
       {/* Mobile sidebar overlay */}
       {showSidebar && (
         <div 
@@ -100,6 +103,10 @@ export function ChatLayout() {
           }}
           onDeleteSession={handleDeleteSession}
           onClose={() => setShowSidebar(false)}
+          onOpenSettings={() => {
+            setShowSettings(true)
+            setShowSidebar(false)
+          }}
         />
       </div>
 
