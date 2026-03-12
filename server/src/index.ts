@@ -41,7 +41,27 @@ app.post('/login', async (c) => {
 })
 
 // Serve frontend static files (must be after API routes)
-app.use('/*', serveStatic({ root: './public' }))
+// Use a custom handler to support SPA fallback
+app.use('/*', async (c, next) => {
+  // Try to serve static file first
+  const staticHandler = serveStatic({ root: './public' })
+  const response = await staticHandler(c, next)
+  
+  // If file not found (404) and not an API route, serve index.html
+  if (!response && !c.req.path.startsWith('/api/') && !c.req.path.startsWith('/upload') && !c.req.path.startsWith('/files/')) {
+    const indexPath = './public/index.html'
+    try {
+      const file = Bun.file(indexPath)
+      if (await file.exists()) {
+        return c.body(file)
+      }
+    } catch {
+      // File doesn't exist
+    }
+  }
+  
+  return response
+})
 
 // Initialize database
 const db = new DatabaseManager()
