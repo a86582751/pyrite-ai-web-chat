@@ -1,8 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
 import { MessageTree } from './MessageTree'
 import { InputArea } from './InputArea'
+import { AssistantSettingsModal } from './AssistantSettingsModal'
+import { useAssistantStore } from '../store/assistants'
 import { chatApi, sessionsApi } from '../utils/api'
 import type { Session, Message } from '../types'
+import { Bot } from 'lucide-react'
 
 interface ChatAreaProps {
   session: Session | null
@@ -15,7 +18,10 @@ export function ChatArea({ session, messages, onMessagesUpdate, onToggleSidebar 
   const [selectedModel, setSelectedModel] = useState('gpt-5')
   const [streamingContent, setStreamingContent] = useState<Record<string, string>>({})
   const [isStreaming, setIsStreaming] = useState(false)
+  const [showAssistantSettings, setShowAssistantSettings] = useState(false)
+  const [currentAssistantId, setCurrentAssistantId] = useState<string | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
+  const { assistants, getDefaultAssistant } = useAssistantStore()
 
   // Cleanup abort controller on unmount
   useEffect(() => {
@@ -197,8 +203,17 @@ export function ChatArea({ session, messages, onMessagesUpdate, onToggleSidebar 
     )
   }
 
+  const currentAssistant = assistants.find(a => a.id === currentAssistantId) || getDefaultAssistant()
+
   return (
     <div className="flex-1 flex flex-col bg-slate-950 min-h-0">
+      <AssistantSettingsModal
+        isOpen={showAssistantSettings}
+        onClose={() => setShowAssistantSettings(false)}
+        currentAssistantId={currentAssistantId}
+        onSelectAssistant={setCurrentAssistantId}
+      />
+      
       {/* Header */}
       <div className="h-14 border-b border-slate-800 flex items-center justify-between px-3 sm:px-4 bg-slate-900/50 shrink-0">
         <div className="flex items-center gap-2 min-w-0">
@@ -212,8 +227,18 @@ export function ChatArea({ session, messages, onMessagesUpdate, onToggleSidebar 
           </button>
           <h2 className="font-medium text-white truncate text-sm sm:text-base">{session.title}</h2>
         </div>
-        <div className="text-xs sm:text-sm text-slate-400 shrink-0">
-          {messages.length > 0 ? countMessages(messages[0]) : 0} 条
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Assistant selector */}
+          <button
+            onClick={() => setShowAssistantSettings(true)}
+            className="flex items-center gap-1.5 px-2 py-1.5 text-xs sm:text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+          >
+            <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">{currentAssistant?.name || '助手'}</span>
+          </button>
+          <div className="text-xs sm:text-sm text-slate-400">
+            {messages.length > 0 ? countMessages(messages[0]) : 0} 条
+          </div>
         </div>
       </div>
 

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Plus, Trash2, MessageSquare, Settings, LogOut } from 'lucide-react'
 import { useAuthStore } from '../store/auth'
+import { GlobalSettingsModal } from './GlobalSettingsModal'
 import type { Session } from '../types'
 
 interface SidebarProps {
@@ -20,9 +21,9 @@ export function Sidebar({
   onNewSession,
   onDeleteSession,
   onClose,
-  onOpenSettings,
 }: SidebarProps) {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+  const [showGlobalSettings, setShowGlobalSettings] = useState(false)
   const { logout } = useAuthStore()
 
   const formatDate = (timestamp: number) => {
@@ -112,10 +113,12 @@ export function Sidebar({
         )}
       </div>
 
+      <GlobalSettingsModal isOpen={showGlobalSettings} onClose={() => setShowGlobalSettings(false)} />
+      
       {/* Footer */}
       <div className="p-4 border-t border-slate-800 space-y-2">
         <button
-          onClick={onOpenSettings}
+          onClick={() => setShowGlobalSettings(true)}
           className="w-full flex items-center gap-3 px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors text-sm"
         >
           <Settings className="w-4 h-4" />
