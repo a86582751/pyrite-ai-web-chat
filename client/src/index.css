@@ -4,43 +4,44 @@
 
 @layer base {
   :root {
-    /* Cherry Studio inspired dark theme */
-    --bg-primary: #1a1a2e;
-    --bg-secondary: #16213e;
-    --bg-tertiary: #0f3460;
-    --bg-card: #252542;
-    --bg-hover: #2d2d52;
+    /* Cherry Studio accurate color palette */
+    --bg-primary: #1e1e2e;
+    --bg-secondary: #252536;
+    --bg-tertiary: #2a2a3c;
+    --bg-card: #2d2d3d;
+    --bg-hover: #353545;
     
-    --accent-primary: #e94560;
-    --accent-secondary: #9d4edd;
-    --accent-success: #00d084;
-    --accent-warning: #ffa726;
+    --accent-primary: #3b82f6;
+    --accent-secondary: #4ade80;
+    --accent-success: #22c55e;
+    --accent-warning: #f59e0b;
+    --accent-danger: #ef4444;
     
     --text-primary: #ffffff;
-    --text-secondary: #a0a0b0;
-    --text-muted: #6a6a7a;
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
     
-    --border-color: #2d2d4a;
+    --border-color: #2d2d3d;
     
-    --background: 240 20% 12%;
+    --background: 240 15% 15%;
     --foreground: 0 0% 100%;
-    --card: 240 20% 15%;
+    --card: 240 15% 18%;
     --card-foreground: 0 0% 100%;
-    --popover: 240 20% 12%;
+    --popover: 240 15% 15%;
     --popover-foreground: 0 0% 100%;
-    --primary: 280 70% 60%;
+    --primary: 217 90% 60%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 20% 20%;
+    --secondary: 240 15% 22%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 240 20% 20%;
-    --muted-foreground: 240 10% 60%;
-    --accent: 340 80% 60%;
+    --muted: 240 15% 22%;
+    --muted-foreground: 220 10% 60%;
+    --accent: 142 70% 60%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 340 80% 60%;
+    --destructive: 0 80% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 240 20% 25%;
-    --input: 240 20% 25%;
-    --ring: 280 70% 60%;
+    --border: 240 15% 25%;
+    --input: 240 15% 25%;
+    --ring: 142 70% 60%;
     --radius: 0.75rem;
   }
 }
@@ -55,10 +56,10 @@
   }
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar - Cherry Studio style */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -66,12 +67,12 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(157, 78, 221, 0.3);
-  border-radius: 3px;
+  background: rgba(107, 114, 128, 0.3);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(157, 78, 221, 0.5);
+  background: rgba(107, 114, 128, 0.5);
 }
 
 /* Hide scrollbar utility */
@@ -100,34 +101,72 @@
 
 /* Cherry Studio style buttons */
 .btn-primary {
-  background: linear-gradient(135deg, #9d4edd 0%, #e94560 100%);
+  background-color: var(--accent-primary);
   color: white;
   border: none;
+  border-radius: 8px;
   transition: all 0.2s ease;
 }
 
 .btn-primary:hover {
   opacity: 0.9;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(157, 78, 221, 0.4);
+}
+
+/* Toggle switch - Cherry Studio green style */
+.toggle-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background-color: var(--bg-tertiary);
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.toggle-switch.active {
+  background-color: var(--accent-secondary);
+}
+
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background-color: white;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.toggle-switch.active::after {
+  left: 22px;
 }
 
 /* Glass effect */
 .glass {
-  background: rgba(37, 37, 66, 0.8);
+  background: rgba(45, 45, 61, 0.8);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(157, 78, 221, 0.2);
+  border: 1px solid var(--border-color);
 }
 
-/* Glow effect */
-.glow {
-  box-shadow: 0 0 20px rgba(157, 78, 221, 0.3);
+/* Card style */
+.card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
 }
 
-/* Gradient text */
-.gradient-text {
-  background: linear-gradient(135deg, #9d4edd 0%, #e94560 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* Input style */
+.input {
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  padding: 10px 14px;
+}
+
+.input:focus {
+  border-color: var(--accent-primary);
+  outline: none;
 }
