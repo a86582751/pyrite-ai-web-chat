@@ -439,17 +439,44 @@ function ProvidersTab({ providers, configs, onAdd, onDelete }: ProvidersTabProps
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="block text-sm text-slate-400">
-                选择要添加的模型 ({editingProvider.models?.length || 0} 已选)
+                选择要添加的模型 ({editingProvider.models?.length || 0}/{fetchedModels.length})
               </label>
-              <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                <input
-                  type="text"
-                  value={modelSearch}
-                  onChange={(e) => setModelSearch(e.target.value)}
-                  placeholder="搜索模型..."
-                  className="pl-9 pr-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500"
-                />
+              <div className="flex items-center gap-2">
+                {/* Select All / None buttons */}
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => setEditingProvider(prev => ({ ...prev, models: [...fetchedModels] }))}
+                    className="px-2 py-1 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 rounded transition-colors"
+                  >
+                    全选
+                  </button>
+                  <button
+                    onClick={() => setEditingProvider(prev => ({ ...prev, models: [] }))}
+                    className="px-2 py-1 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 rounded transition-colors"
+                  >
+                    全不选
+                  </button>
+                  <button
+                    onClick={() => {
+                      const current = editingProvider.models || []
+                      const inverted = fetchedModels.filter(m => !current.includes(m))
+                      setEditingProvider(prev => ({ ...prev, models: inverted }))
+                    }}
+                    className="px-2 py-1 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 rounded transition-colors"
+                  >
+                    反选
+                  </button>
+                </div>
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <input
+                    type="text"
+                    value={modelSearch}
+                    onChange={(e) => setModelSearch(e.target.value)}
+                    placeholder="搜索模型..."
+                    className="pl-9 pr-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
               </div>
             </div>
             <div className="max-h-48 overflow-y-auto space-y-1 border border-slate-700 rounded-lg p-2">

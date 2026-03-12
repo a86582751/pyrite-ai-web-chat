@@ -1,6 +1,5 @@
 import { useState, useRef, useCallback } from 'react'
 import { Send, Square, Paperclip, ChevronDown, Settings, Plus } from 'lucide-react'
-import { useModelStore } from '../store/models'
 import { useModelConfigStore } from '../store/modelConfigs'
 import { useMcpStore } from '../store/mcp'
 import { uploadApi } from '../utils/api'
@@ -30,7 +29,6 @@ export function InputArea({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   
-  useModelStore() // Keep hook for compatibility
   const { configs: modelConfigs } = useModelConfigStore()
   const { servers, enabledServers, toggleServer } = useMcpStore()
 
@@ -40,11 +38,10 @@ export function InputArea({
     acc[config.provider].push({
       id: config.name,
       name: config.name,
-      group: config.provider,
-      configured: true,
+      provider: config.provider,
     })
     return acc
-  }, {} as Record<string, any[]>)
+  }, {} as Record<string, Array<{ id: string; name: string; provider: string }>>)
 
   // Auto-resize textarea
   const adjustHeight = useCallback(() => {
@@ -98,6 +95,11 @@ export function InputArea({
     setAttachments(prev => prev.filter(a => a !== url))
   }
 
+  // Flatten all models for display
+  const allModels = Object.entries(groupedModels).flatMap(([provider, models]) =>
+    models.map(m => ({ ...m, provider }))
+  )
+
   return (
     <div className="border-t border-slate-800 bg-slate-900/50 p-4">
       <SettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
@@ -132,36 +134,54 @@ export function InputArea({
             onClick={() => setShowModelSelect(!showModelSelect)}
             className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs sm:text-sm text-slate-300 transition-colors whitespace-nowrap"
           >
-            <span className="truncate max-w-[80px] sm:max-w-[150px]">{selectedModel}</span>
+            <span className="truncate max-w-[80px] sm:max-w-[150px]">
+              {selectedModel || '选择模型'}
+            </span>
             <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
           
           {showModelSelect && (
-            <div className="absolute bottom-full left-0 mb-2 w-56 sm:w-64 max-h-80 overflow-y-auto bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50">
-              {Object.entries(groupedModels).map(([provider, modelList]) => (
-                modelList.length > 0 && (
-                  <div key={provider}>
-                    <div className="px-3 py-2 text-xs font-medium text-slate-500 uppercase">
-                      {provider}
+            <div className="absolute bottom-full left-0 mb-2 w-64 sm:w-72 max-h-80 overflow-y-auto bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50">
+              {allModels.length === 0 ? (
+                <div className="px-3 py-4 text-sm text-slate-500 text-center">
+                  暂无配置模型
+                  <br />
+                  <button
+                    onClick={() => {
+                      setShowModelSelect(false)
+                      setShowSettings(true)
+                    }}
+                    className="text-blue-400 hover:underline mt-1"
+                  >
+                    去添加模型
+                  </button>
+                </div>
+              ) : (
+                Object.entries(groupedModels).map(([provider, modelList]) => (
+                  modelList.length > 0 && (
+                    <div key={provider}>
+                      <div className="px-3 py-2 text-xs font-medium text-slate-500 uppercase bg-slate-800 sticky top-0">
+                        {provider}
+                      </div>
+                      {modelList.map((model) => (
+                        <button
+                          key={model.id}
+                          onClick={() => {
+                            onModelChange(model.name)
+                            setShowModelSelect(false)
+                          }}
+                          className={`
+                            w-full px-3 py-2 text-left text-sm hover:bg-slate-700 transition-colors
+                            ${selectedModel === model.name ? 'bg-blue-600/20 text-blue-400' : 'text-slate-300'}
+                          `}
+                        >
+                          {model.name}
+                        </button>
+                      ))}
                     </div>
-                    {modelList.map((model) => (
-                      <button
-                        key={model.id}
-                        onClick={() => {
-                          onModelChange(model.id)
-                          setShowModelSelect(false)
-                        }}
-                        className={`
-                          w-full px-3 py-2 text-left text-sm hover:bg-slate-700 transition-colors
-                          ${selectedModel === model.id ? 'bg-blue-600/20 text-blue-400' : 'text-slate-300'}
-                        `}
-                      >
-                        {model.name}
-                      </button>
-                    ))}
-                  </div>
-                )
-              ))}
+                  )
+                ))
+              )}
             </div>
           )}
         </div>
