@@ -8,9 +8,10 @@ interface ChatAreaProps {
   session: Session | null
   messages: Message[]
   onMessagesUpdate: (messages: Message[]) => void
+  onToggleSidebar: () => void
 }
 
-export function ChatArea({ session, messages, onMessagesUpdate }: ChatAreaProps) {
+export function ChatArea({ session, messages, onMessagesUpdate, onToggleSidebar }: ChatAreaProps) {
   const [selectedModel, setSelectedModel] = useState('gpt-5')
   const [streamingContent, setStreamingContent] = useState<Record<string, string>>({})
   const [isStreaming, setIsStreaming] = useState(false)
@@ -179,29 +180,45 @@ export function ChatArea({ session, messages, onMessagesUpdate }: ChatAreaProps)
   if (!session) {
     return (
       <div className="flex-1 flex items-center justify-center bg-slate-950">
-        <div className="text-center">
+        <div className="text-center px-4">
           <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
             <span className="text-2xl">🌳</span>
           </div>
           <h2 className="text-xl font-semibold text-white mb-2">Chat Tree</h2>
           <p className="text-slate-400">选择一个对话或创建新对话</p>
+          <button
+            onClick={onToggleSidebar}
+            className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg lg:hidden"
+          >
+            打开侧边栏
+          </button>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-slate-950">
+    <div className="flex-1 flex flex-col bg-slate-950 min-h-0">
       {/* Header */}
-      <div className="h-14 border-b border-slate-800 flex items-center justify-between px-4 bg-slate-900/50">
-        <h2 className="font-medium text-white truncate">{session.title}</h2>
-        <div className="text-sm text-slate-400">
-          {messages.length > 0 ? countMessages(messages[0]) : 0} 条消息
+      <div className="h-14 border-b border-slate-800 flex items-center justify-between px-3 sm:px-4 bg-slate-900/50 shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <button
+            onClick={onToggleSidebar}
+            className="lg:hidden p-2 -ml-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <h2 className="font-medium text-white truncate text-sm sm:text-base">{session.title}</h2>
+        </div>
+        <div className="text-xs sm:text-sm text-slate-400 shrink-0">
+          {messages.length > 0 ? countMessages(messages[0]) : 0} 条
         </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden min-h-0">
         <MessageTree
           messages={messages}
           streamingContent={streamingContent}

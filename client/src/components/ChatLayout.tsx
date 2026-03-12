@@ -70,20 +70,48 @@ export function ChatLayout() {
     setMessages(newMessages)
   }
 
+  const [showSidebar, setShowSidebar] = useState(false)
+
   return (
-    <div className="flex h-screen bg-slate-950">
-      <Sidebar
-        sessions={sessions}
-        currentSession={currentSession}
-        onSelectSession={setCurrentSession}
-        onNewSession={handleNewSession}
-        onDeleteSession={handleDeleteSession}
-      />
-      <ChatArea
-        session={currentSession}
-        messages={messages}
-        onMessagesUpdate={handleMessagesUpdate}
-      />
+    <div className="flex h-screen h-[100dvh] bg-slate-950 overflow-hidden">
+      {/* Mobile sidebar overlay */}
+      {showSidebar && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setShowSidebar(false)}
+        />
+      )}
+      
+      {/* Sidebar */}
+      <div className={`
+        fixed lg:static inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out
+        ${showSidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
+        <Sidebar
+          sessions={sessions}
+          currentSession={currentSession}
+          onSelectSession={(session) => {
+            setCurrentSession(session)
+            setShowSidebar(false)
+          }}
+          onNewSession={() => {
+            handleNewSession()
+            setShowSidebar(false)
+          }}
+          onDeleteSession={handleDeleteSession}
+          onClose={() => setShowSidebar(false)}
+        />
+      </div>
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <ChatArea
+          session={currentSession}
+          messages={messages}
+          onMessagesUpdate={handleMessagesUpdate}
+          onToggleSidebar={() => setShowSidebar(!showSidebar)}
+        />
+      </div>
     </div>
   )
 }

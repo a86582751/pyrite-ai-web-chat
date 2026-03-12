@@ -9,6 +9,7 @@ interface SidebarProps {
   onSelectSession: (session: Session) => void
   onNewSession: () => void
   onDeleteSession: (id: string) => void
+  onClose?: () => void
 }
 
 export function Sidebar({
@@ -17,6 +18,7 @@ export function Sidebar({
   onSelectSession,
   onNewSession,
   onDeleteSession,
+  onClose,
 }: SidebarProps) {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const { logout } = useAuthStore()
@@ -40,12 +42,22 @@ export function Sidebar({
   }
 
   return (
-    <div className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col">
+    <div className="w-64 h-full bg-slate-900 border-r border-slate-800 flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b border-slate-800">
+      <div className="p-4 border-b border-slate-800 flex items-center gap-2">
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="lg:hidden p-2 -ml-2 text-slate-400 hover:text-white"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
         <button
           onClick={onNewSession}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
+          className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
         >
           <Plus className="w-4 h-4" />
           新对话
