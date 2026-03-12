@@ -78,8 +78,7 @@ export function MessageTree({ messages, streamingContent, onRegenerate, isStream
         }}
       >
         {virtualizer.getVirtualItems().map((virtualItem) => {
-          const { message, depth, path } = flatMessages[virtualItem.index]
-          const isLast = virtualItem.index === flatMessages.length - 1
+          const { message, depth } = flatMessages[virtualItem.index]
           
           return (
             <div

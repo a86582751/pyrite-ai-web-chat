@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { MessageTree } from './MessageTree'
 import { InputArea } from './InputArea'
 import { chatApi, sessionsApi } from '../utils/api'
@@ -7,11 +7,10 @@ import type { Session, Message } from '../types'
 interface ChatAreaProps {
   session: Session | null
   messages: Message[]
-  isLoading: boolean
   onMessagesUpdate: (messages: Message[]) => void
 }
 
-export function ChatArea({ session, messages, isLoading, onMessagesUpdate }: ChatAreaProps) {
+export function ChatArea({ session, messages, onMessagesUpdate }: ChatAreaProps) {
   const [selectedModel, setSelectedModel] = useState('gpt-5')
   const [streamingContent, setStreamingContent] = useState<Record<string, string>>({})
   const [isStreaming, setIsStreaming] = useState(false)

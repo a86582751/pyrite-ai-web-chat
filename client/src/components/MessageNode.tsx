@@ -1,4 +1,4 @@
-import React from 'react'
+// MessageNode component
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { RotateCcw, User, Bot, FileText } from 'lucide-react'

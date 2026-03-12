@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { serveStatic } from 'hono/bun'
-import { Database } from './db'
+import { DatabaseManager } from './db'
 import { authMiddleware } from './middleware/auth'
 import { chatRoutes } from './routes/chat'
 import { mcpRoutes } from './routes/mcp'
@@ -41,7 +41,7 @@ app.post('/login', async (c) => {
 })
 
 // Initialize database
-const db = new Database()
+const db = new DatabaseManager()
 db.init()
 
 const PORT = process.env.PORT || 3333

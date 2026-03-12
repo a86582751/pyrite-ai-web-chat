@@ -1,13 +1,13 @@
-import Database from 'better-sqlite3'
 import { v4 as uuidv4 } from 'uuid'
 import type { Message, Session, ModelConfig } from '../types'
 
+import { Database } from 'bun:sqlite'
+
 export class DatabaseManager {
-  private db: Database.Database
+  private db: any
 
   constructor() {
     this.db = new Database('./data/chat.db')
-    this.db.pragma('journal_mode = WAL')
   }
 
   init() {

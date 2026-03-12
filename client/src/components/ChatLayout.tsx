@@ -8,7 +8,6 @@ export function ChatLayout() {
   const [sessions, setSessions] = useState<Session[]>([])
   const [currentSession, setCurrentSession] = useState<Session | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
-  const [isLoading, setIsLoading] = useState(false)
 
   // Load sessions
   useEffect(() => {
@@ -35,14 +34,11 @@ export function ChatLayout() {
   }, [currentSession])
 
   const loadMessages = async (sessionId: string) => {
-    setIsLoading(true)
     try {
       const data = await sessionsApi.getMessages(sessionId)
       setMessages(data)
     } catch (error) {
       console.error('Failed to load messages:', error)
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -86,7 +82,6 @@ export function ChatLayout() {
       <ChatArea
         session={currentSession}
         messages={messages}
-        isLoading={isLoading}
         onMessagesUpdate={handleMessagesUpdate}
       />
     </div>
